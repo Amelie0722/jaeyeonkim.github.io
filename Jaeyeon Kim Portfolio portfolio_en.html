@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaeyeon Kim | Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            scroll-behavior: smooth;
+        }
+        section {
+            padding: 5rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        section.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .section-title {
+            position: relative;
+            display: inline-block;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 80%;
+            height: 3px;
+            background-color: #2e86de;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.5rem;
+            top: 0;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #2e86de;
+            border: 2px solid #0d1117;
+        }
+        .timeline-line {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #30363d;
+        }
+        .skill-bar-container {
+            height: 12px;
+            background-color: #30363d;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .skill-bar-fill {
+            height: 100%;
+            background-color: #2e86de;
+            transition: width 1s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300">
+
+    <nav class="bg-slate-900/80 backdrop-blur-lg sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-slate-50">Jaeyeon Kim</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#about" class="text-slate-400 hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">About</a>
+                        <a href="#experience" class="text-slate-400 hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">Experience</a>
+                        <a href="#skills" class="text-slate-400 hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">Skills</a>
+                        <a href="#contact" class="text-slate-400 hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        
+        <section id="hero" class="text-center py-20 relative z-10 animate-in">
+            <h1 class="text-6xl md:text-8xl font-extrabold text-slate-100 tracking-tight leading-none">Jaeyeon Kim</h1>
+            <p class="mt-4 text-2xl md:text-3xl text-blue-400 font-semibold tracking-wide">Global Business Enthusiast</p>
+            <p class="mt-6 max-w-3xl mx-auto text-lg text-slate-400">
+                A highly adaptable professional with a passion for bridging cultures and driving value across borders. My diverse experiences have equipped me with strong communication skills and a problem-solving mindset ready to tackle global challenges.
+            </p>
+        </section>
+
+        <section id="about" class="animate-in">
+            <h2 class="section-title text-slate-100">About Me</h2>
+            <div class="grid md:grid-cols-3 gap-8 mt-8">
+                <div class="md:col-span-1 space-y-6">
+                    <h3 class="text-xl font-bold text-slate-200">Core Competencies</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-800 rounded-lg">
+                            <h4 class="font-semibold text-blue-400">Global Communication</h4>
+                            <p class="text-sm text-slate-400">Fluent in Japanese (JLPT N1) with extensive experience in cross-cultural communication.</p>
+                        </div>
+                        <div class="p-4 bg-slate-800 rounded-lg">
+                            <h4 class="font-semibold text-blue-400">Logical Problem-Solving</h4>
+                            <p class="text-sm text-slate-400">Proven ability to analyze complex data and develop optimal solutions, honed through data labeling and business bootcamps.</p>
+                        </div>
+                        <div class="p-4 bg-slate-800 rounded-lg">
+                            <h4 class="font-semibold text-blue-400">Client-Centric Mindset</h4>
+                            <p class="text-sm text-slate-400">Acquired through customer-facing roles, a strong ability to empathize with stakeholders and effectively manage client relationships.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 space-y-6 text-slate-400 leading-relaxed">
+                    <div>
+                        <h4 class="font-semibold text-lg mb-2 text-slate-200">My Journey & Strengths</h4>
+                        <p>I have consistently been recognized for my leadership and calm demeanor since childhood. My natural curiosity led me to actively participate in various campus-wide competitions and projects, where I developed an appreciation for diverse cultures and a strong interest in international trade.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-lg mb-2 text-slate-200">Key Motivation</h4>
+                        <p>I am passionate about contributing to a globalized company that values continuous growth and self-development. With my practical skills and dedication, I am confident I can be a valuable asset to your team and a key contributor to your company’s success.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience" class="animate-in">
+            <h2 class="section-title text-slate-100">Experience</h2>
+            <div class="relative mt-8 space-y-12">
+                <div class="timeline-line"></div>
+                <div class="timeline-item">
+                    <h3 class="text-xl font-bold text-slate-200">Grace Hill Community Center <span class="text-sm font-medium text-slate-400 ml-2">(Current)</span></h3>
+                    <p class="text-sm text-slate-500">May 2025 ~ Present</p>
+                    <p class="mt-2 text-sm text-slate-400">
+                        <strong>Mentoring diverse children as part of the Korea Student Aid Foundation's scholarship program.</strong> This role has strengthened my ability to understand and address the needs of individuals from different cultural backgrounds, a critical skill for building trust with international clients.
+                    </p>
+                </div>
+                <div class="timeline-item">
+                    <h3 class="text-xl font-bold text-slate-200">7-Eleven <span class="text-sm font-medium text-slate-400 ml-2">Sales Associate</span></h3>
+                    <p class="text-sm text-slate-500">Mar 2022 ~ Jul 2022 / May 2023 ~ Jun 2023</p>
+                    <ul class="mt-2 list-disc list-inside text-slate-400 space-y-1">
+                        <li>Engaged with a high volume of customers, refining strong communication and service skills.</li>
+                        <li>Efficiently identified customer needs and recommended appropriate products, demonstrating a client-centric approach.</li>
+                    </ul>
+                </div>
+                <div class="timeline-item">
+                    <h3 class="text-xl font-bold text-slate-200">Aimo & Matrix <span class="text-sm font-medium text-slate-400 ml-2">Data Labeler</span></h3>
+                    <p class="text-sm text-slate-500">Nov 2021 ~ May 2022</p>
+                    <ul class="mt-2 list-disc list-inside text-slate-400 space-y-1">
+                        <li>Accurately classified large datasets, developing a meticulous attention to detail and precision.</li>
+                        <li>Applied strong focus and concentration skills to complex data, which is directly transferable to managing detailed trade documents.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills" class="animate-in">
+            <h2 class="section-title text-slate-100">Skills & Education</h2>
+            <div class="grid lg:grid-cols-2 gap-12 mt-8">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-200 mb-6">Education & Language</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-slate-300">Seoul Theological University <span class="font-normal text-sm text-slate-500 block sm:inline-block">(Mar 2021 ~ Aug 2026)</span></h4>
+                            <p class="text-slate-400 mt-1">B.A. in Global Management, B.A. in Japanese Cultural Content (Dual Major)</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-300 mb-4">Japanese Proficiency (JLPT N1)</h4>
+                            <div class="w-full text-center p-6 bg-slate-800 rounded-lg">
+                                <div class="text-3xl font-bold text-blue-400">Business-level Communication</div>
+                                <p class="mt-2 text-sm text-slate-400">Ability to understand complex topics from news and editorials, and communicate fluently with native speakers.</p>
+                                <div class="mt-6 w-2/3 mx-auto">
+                                    <div class="skill-bar-container">
+                                        <div id="language-bar" class="skill-bar-fill" style="width: 90%;"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-xs text-slate-500">Comprehension and Application</div>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-200 mt-8 mb-4">Certifications & Awards</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center"><span class="bg-blue-800 text-blue-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Cert</span> JLPT N1 (Aug 2025)</li>
+                        <li class="flex items-center"><span class="bg-blue-800 text-blue-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Cert</span> Computer Proficiency Level 2 (Sep 2025)</li>
+                        <li class="flex items-center"><span class="bg-blue-800 text-blue-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Cert</span> Class 2 Ordinary Driver's License (Feb 2021)</li>
+                        <li class="flex items-center"><span class="bg-blue-800 text-blue-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Cert</span> DIAT (Digital Information Application Test) (May 2014)</li>
+                        <li class="flex items-center"><span class="bg-green-800 text-green-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Award</span> Academic Writing Contest, Grand Prize (Jul 2025)</li>
+                        <li class="flex items-center"><span class="bg-green-800 text-green-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Award</span> H+ English Speech Contest, Honorable Mention (Jun 2025 & Jul 2024)</li>
+                        <li class="flex items-center"><span class="bg-green-800 text-green-200 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Award</span> STU Challengers Program, Excellence Award (Mar 2024)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-200 mb-6">Key Training</h3>
+                    <div class="space-y-6">
+                        <div class="bg-slate-800 p-4 rounded-lg">
+                            <h4 class="font-bold text-slate-200">5-Week Content Marketing Bootcamp</h4>
+                            <p class="text-sm text-slate-400 mt-1 mb-2">Comento (Nov 2024 ~ Dec 2024)</p>
+                            <p class="text-sm text-slate-400">Developed practical skills in creating communication strategies based on internal/external analysis and planning channel-specific content (short-form, articles).</p>
+                        </div>
+                        <div class="bg-slate-800 p-4 rounded-lg">
+                            <h4 class="font-bold text-slate-200">B2B Tech Sales & B2C Sales Mgmt Bootcamp</h4>
+                            <p class="text-sm text-slate-400 mt-1 mb-2">Comento (Dec 2023 ~ Jan 2024)</p>
+                            <p class="text-sm text-slate-400">Gained hands-on experience in sales, including identifying client needs, proposing B2B solutions, and creating proposals focused on quantifiable outcomes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="animate-in text-center">
+            <h2 class="section-title text-slate-100">Contact</h2>
+            <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-400">
+                <span class="font-semibold">My passion is your company’s next great asset.</span>
+                <br>
+                I am ready to contribute to your global growth with my relentless drive for challenges.
+                <br class="hidden md:block">
+                Eager to connect and discuss how my skills can bring value to your team.
+            </p>
+            <div class="mt-8 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <a href="mailto:rlawodus0722@gmail.com" class="text-blue-400 hover:text-blue-300">rlawodus0722@gmail.com</a>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                    <span class="text-slate-400">+82) 10-2396-3708</span>
+                </div>
+            </div>
+            <div class="mt-8">
+                <a href="https://www.linkedin.com/in/jaeyeon-kim-a52158232/" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105">
+                    View LinkedIn Profile
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('section');
+            let current = '';
+            window.addEventListener('scroll', () => {
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (window.scrollY >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                document.querySelectorAll('nav a').forEach(link => {
+                    link.classList.remove('text-blue-400', 'font-medium');
+                    link.classList.add('text-slate-400');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.remove('text-slate-400');
+                        link.classList.add('text-blue-400', 'font-medium');
+                    }
+                });
+            });
+            const languageBar = document.getElementById('language-bar');
+            if (languageBar) {
+                languageBar.style.width = '90%';
+            }
+        });
+    </script>
+</body>
+</html>
