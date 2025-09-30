@@ -6,262 +6,419 @@
     <title>김재연 | 포트폴리오</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Serene Professional (Background: #f8fafc, Text: #1e293b, Primary Accent: #2563eb, Secondary Accent: #e2e8f0) -->
-    <!-- Application Structure Plan: A single-page, vertical-scrolling SPA structure was chosen to create a seamless narrative flow. It starts with a Hero section for immediate impact, followed by an 'About Me' section that combines Core Competencies and the Self-Introduction to build a strong personal brand. An interactive vertical timeline for 'Experience' visually showcases growth and connects diverse roles. A gridded 'Skills & Education' section efficiently organizes qualifications, highlighting key training. This structure guides recruiters logically from a high-level summary to detailed evidence, making the candidate's story compelling and easy to follow. -->
-    <!-- Visualization & Content Choices: 
-    - Experience -> Goal: Show career journey and skill application -> Viz/Method: Interactive Vertical Timeline (HTML/CSS/JS) -> Interaction: Hover effects on timeline items to draw attention -> Justification: Visually more engaging than a static list; effectively connects seemingly unrelated part-time roles to core professional skill development.
-    - Language Skills -> Goal: Quantify proficiency visually -> Viz/Method: Horizontal Bar Chart (Chart.js Canvas) -> Interaction: Static chart, animated on load -> Justification: Provides a modern, quick-to-understand visual representation of the high-level Japanese proficiency (JLPT N1), making it more impactful than text alone.
-    - Competencies/Skills/Education -> Goal: Organize dense, varied information clearly -> Viz/Method: Card-based Grid Layout (Tailwind CSS) -> Interaction: Static layout for easy scanning -> Justification: This method categorizes and presents a large amount of data (degrees, certs, bootcamps) in a structured, digestible format, preventing information overload.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
         }
         section {
-            scroll-snap-align: start;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem 0;
-            transition: filter 0.5s ease-in-out;
+            padding: 5rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            width: 1.25rem;
-            height: 1.25rem;
-            border-radius: 50%;
-            left: -0.625rem;
-            top: 0;
-            background-color: #2563eb;
-            border: 4px solid #f1f5f9;
+        section.animate-in {
+            opacity: 1;
+            transform: translateY(0);
         }
         .section-title {
-            position: relative;
-            display: inline-block;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
         }
         .section-title::after {
             content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            flex-grow: 1;
+            margin-left: 1rem;
             height: 3px;
-            background-color: #2563eb;
+            background: linear-gradient(to right, #2e86de, transparent);
+            border-radius: 9999px;
         }
         .timeline-item {
             position: relative;
             padding-left: 2rem;
-            min-width: 0;
-            flex-shrink: 0;
+            margin-bottom: 2.5rem;
+            /* 애니메이션 추가 */
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
         }
-        .timeline-item.fade-in {
+        .timeline-item.animate-in {
             opacity: 1;
             transform: translateY(0);
         }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.5rem;
+            top: 0.25rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #2e86de;
+            border: 3px solid #f9fafb; /* 배경색과 동일하게 설정하여 원 주변을 강조 */
+            box-shadow: 0 0 0 4px rgba(46, 134, 222, 0.5); /* 은은한 링 효과 */
+            transition: transform 0.3s ease-in-out;
+        }
+        .timeline-item:hover::before {
+            transform: scale(1.1);
+        }
+        .timeline-line {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #e5e7eb;
+        }
+        .skill-level-bar {
+            height: 10px;
+            background-color: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .skill-level-fill {
+            height: 100%;
+            background-color: #2e86de;
+            transition: width 1s ease-in-out;
+            animation: bar-fill 1s ease-out forwards;
+        }
+        @keyframes bar-fill {
+            from { width: 0; }
+            to { width: var(--skill-level); }
+        }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-gray-50">
+    <script>
+        const API_KEY = "";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+        
+        async function fetchWithBackoff(url, options, maxRetries = 5, delay = 1000) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        if (response.status === 429 && i < maxRetries - 1) { 
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            delay *= 2; 
+                            continue; 
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        throw error;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; 
+                }
+            }
+        }
 
+        async function generateContent(prompt, systemInstruction) {
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+            };
+            
+            try {
+                const response = await fetchWithBackoff(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    console.error("LLM response failed or was empty:", result);
+                    return "AI 응답을 생성하는 데 실패했습니다. 잠시 후 다시 시도해주세요.";
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                return "API 호출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+            }
+        }
+
+        async function summarizePortfolio() {
+            const summaryOutput = document.getElementById('summary-output');
+            summaryOutput.classList.remove('hidden');
+            summaryOutput.innerHTML = '<p class="text-center text-blue-600">AI가 포트폴리오를 분석하고 있습니다. 잠시만 기다려주세요...</p>';
+            
+            const portfolioContent = `
+                이름: 김재연
+                최종 목표: 벨기에, 네덜란드 등 유럽계 회사 한국/일본 지사 채용
+                주요 역량: 글로벌 커뮤니케이션(JLPT N1, 일본어 시사/뉴스 이해), 문제 해결력, 고객 중심 사고, 논리적 분석.
+                학력: 서울신학대학교 글로벌경영학(주), 일본 문화콘텐츠학(부) (2026.08 졸업 예정)
+                주요 경력:
+                1. 그레이스힐 검단지역아동센터 돌봄교사 (재직중): 한국장학재단 다문화/탈북민 멘토링 장학금 사업 일환. 타문화 이해 및 소통 능력 강화.
+                2. 세븐일레븐 판매직: 고객 응대, 영업 실무 간접 경험.
+                3. 에이모/메트릭스 데이터 라벨링: 꼼꼼함, 방대한 자료 체계적 정리 능력.
+                주요 교육:
+                1. 코멘토 B2B기술영업 & B2C영업관리캠프: 고객 니즈 파악, B2B 상품 제안, 정량적 성과 중심 제안서 작성 실무 경험.
+                2. 코멘토 콘텐츠 마케팅 캠프: 내부/외부 환경 분석 기반 커뮤니케이션 전략 수립, 채널별 콘텐츠 기획.
+            `;
+
+            const systemInstruction = "당신은 세계적인 커리어 컨설턴트입니다. 주어진 포트폴리오 내용을 분석하여 채용 담당자가 가장 주목할 만한 지원자의 핵심 강점 3가지를 도출하고, 해당 포트폴리오가 무역/해외영업 직무에 왜 적합한지 5문장 이내로 강력하게 요약해 주세요. 답변은 한국어로만 작성해야 합니다.";
+            const prompt = `다음 포트폴리오 내용을 분석해 핵심 요약문을 생성해 주세요: ${portfolioContent}`;
+            
+            try {
+                const resultText = await generateContent(prompt, systemInstruction);
+                summaryOutput.innerHTML = `
+                    <div class="border border-blue-300 bg-blue-50 p-6 rounded-lg shadow-inner">
+                        <h4 class="text-xl font-bold text-blue-700 mb-3">AI가 분석한 핵심 강점 요약</h4>
+                        <div class="text-gray-700 whitespace-pre-wrap">${resultText}</div>
+                    </div>
+                `;
+            } catch (error) {
+                summaryOutput.innerHTML = '<p class="text-center text-red-600">AI 요약 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</p>';
+            }
+        }
+
+        async function getCareerAdvice() {
+            const adviceOutput = document.getElementById('advice-output');
+            adviceOutput.classList.remove('hidden');
+            adviceOutput.innerHTML = '<p class="text-center text-blue-600">AI가 커리어 방향을 분석하고 조언을 생성하고 있습니다. 잠시만 기다려주세요...</p>';
+
+            const experienceContent = `
+                주요 목표: 벨기에/네덜란드 등 유럽계 회사 한국/일본 지사
+                현재까지 경험:
+                1. 그레이스힐 검단지역아동센터 돌봄교사 (재직중): 한국장학재단 다문화/탈북민 멘토링. 타문화 이해 및 소통 강화.
+                2. 코멘토 B2B기술영업 & B2C영업관리캠프: B2B/B2C 영업 전략, 고객 니즈 파악.
+                3. 코멘토 콘텐츠 마케팅 캠프: 커뮤니케이션 전략 수립, 채널별 콘텐츠 기획.
+                4. JLPT N1, 일본어 시사/뉴스 이해 가능.
+            `;
+            
+            const systemInstruction = "당신은 유럽 시장 전문가이자 커리어 코치입니다. 주어진 지원자의 경험과 목표(유럽계 회사 취업)를 바탕으로, 현재의 경험을 유럽 시장의 무역/해외영업 직무에 연결하기 위해 앞으로 1년간 어떤 경험(인턴십, 프로젝트, 교육 등)에 집중해야 하는지 구체적인 조언 2~3가지를 제공하세요. 조언은 한국어로 명확하게 작성해야 합니다.";
+            const prompt = `다음 경험을 가진 지원자가 유럽계 회사에 취업하기 위해 집중해야 할 커리어 조언을 주세요: ${experienceContent}`;
+            
+            try {
+                const resultText = await generateContent(prompt, systemInstruction);
+                adviceOutput.innerHTML = `
+                    <div class="border border-green-300 bg-green-50 p-6 rounded-lg shadow-inner">
+                        <h4 class="text-xl font-bold text-green-700 mb-3">AI 커리어 조언 (유럽 진출 전략)</h4>
+                        <div class="text-gray-700 whitespace-pre-wrap">${resultText}</div>
+                    </div>
+                `;
+            } catch (error) {
+                summaryOutput.innerHTML = '<p class="text-center text-red-600">AI 요약 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</p>';
+            }
+        }
+    </script>
     <nav class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <span class="font-bold text-xl text-slate-800">김재연 | 포트폴리오</span>
+                    <span class="font-bold text-xl text-gray-800">김재연</span>
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="#about" class="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">소개</a>
-                        <a href="#experience" class="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">주요 경험</a>
-                        <a href="#skills" class="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">역량 및 교육</a>
-                        <a href="#contact" class="text-slate-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">연락처</a>
+                        <a href="#about" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">소개</a>
+                        <a href="#experience" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">주요 경험</a>
+                        <a href="#skills" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">역량 및 교육</a>
+                        <a href="#contact" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">연락처</a>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="fixed inset-0 pointer-events-none" id="blur-overlay" style="backdrop-filter: blur(0px); transition: backdrop-filter 0.5s ease-in-out;"></div>
-
-    <main class="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         
-        <section id="hero" class="text-center py-20 relative z-10">
-            <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900">김재연</h1>
-            <p class="mt-4 text-xl md:text-2xl text-blue-600 font-semibold">글로벌 비즈니스 전문가를 향한 열정</p>
-            <p class="mt-6 max-w-2xl mx-auto text-lg text-slate-600">
-                다양한 경험을 통해 얻은 소통 능력과 문제 해결력을 바탕으로, 국경을 넘어 가치를 창출하는 인재가 되겠습니다.
-            </p>
+        <section id="intro" class="animate-in my-20">
+            <div class="text-center">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900">김재연</h1>
+                <p class="mt-4 text-xl md:text-2xl text-blue-600 font-semibold">국경을 넘어, 가치를 창출하는 글로벌 비즈니스 솔루셔니스트</p>
+                <p class="mt-6 max-w-2xl mx-auto text-lg text-gray-600 leading-relaxed">
+                    <span class="block">논리적 문제 해결 능력과 고객 중심 사고를 바탕으로,</span>
+                    <span class="block">글로벌 소통 능력을 활용해 새로운 시장과 가치를 창출하겠습니다.</span>
+                </p>
+            </div>
         </section>
 
-        <div class="space-y-24 relative z-10">
-
-            <section id="about" class="bg-white p-8 rounded-2xl shadow-md">
-                <h2 class="section-title text-3xl font-bold text-slate-800">소개 (About Me)</h2>
-                <div class="grid md:grid-cols-3 gap-8 mt-8">
-                    <div class="md:col-span-1 space-y-6">
-                        <h3 class="text-xl font-bold text-slate-700">핵심 역량</h3>
-                        <div class="space-y-4">
-                            <div class="p-4 bg-slate-100 rounded-lg">
-                                <h4 class="font-semibold text-blue-600">글로벌 소통 능력</h4>
-                                <p class="text-sm text-slate-600">JLPT N1, 영어 스피치 경험을 바탕으로 한 원활한 비즈니스 커뮤니케이션</p>
-                            </div>
-                            <div class="p-4 bg-slate-100 rounded-lg">
-                                <h4 class="font-semibold text-blue-600">논리적 문제 해결력</h4>
-                                <p class="text-sm text-slate-600">직무 부트캠프를 통해 함양한 고객 니즈 분석 및 최적 해결책 제시 능력</p>
-                            </div>
-                            <div class="p-4 bg-slate-100 rounded-lg">
-                                <h4 class="font-semibold text-blue-600">고객 중심 사고</h4>
-                                <p class="text-sm text-slate-600">다양한 서비스직 경험을 통해 내재화된 이해관계자 공감 및 응대 능력</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="md:col-span-2 space-y-6 text-slate-700 leading-relaxed">
-                        <div>
-                            <h4 class="font-semibold text-lg mb-2">성장 과정 및 강점</h4>
-                            <p>유년기부터 리더십과 침착함을 인정받으며 성장했습니다. 항상 새로운 것에 대한 호기심이 많아 교내 공모전과 프로젝트에 적극적으로 참여하며 다양한 경험을 쌓았습니다. 특히 여러 나라의 문화와 생활 방식을 직접 체험하며, 무역 분야에 대한 흥미를 키웠습니다. 이러한 경험을 통해 국제적인 감각과 다문화 이해 능력을 갖추게 되었습니다.</p>
-                        </div>
-                         <div>
-                            <h4 class="font-semibold text-lg mb-2">성격의 장단점</h4>
-                            <p>진취적이고 리더십 있는 성격 덕분에 업무를 체계적으로 계획하고 효율적으로 진행하는 장점이 있습니다. 다만, 팀원 개개인의 의견을 경청하는 데 부족함이 있었으나, 봉사활동과 아동센터에서의 경험을 통해 타인의 목소리에 귀 기울이고 소통하는 방법을 배웠습니다. 이는 해외 바이어와의 협상 시 중요한 자산이 될 것입니다.</p>
-                        </div>
-                         <div>
-                            <h4 class="font-semibold text-lg mb-2">지원 동기 및 포부</h4>
-                            <p>세계화 시대에 귀사가 필요로 하는 글로벌 역량을 갖춘 인재라고 생각합니다. 저는 단순히 경제적 이익을 넘어, 저 자신을 한 단계 더 성장시키기 위해 업무에 임하고 싶습니다. 자기계발이 없는 무의미한 업무 반복은 성취감을 저해한다고 생각하며, 입사 후에도 직무 부트캠프에서 배운 실무 역량과 일본어 능력을 활용하여 귀사의 글로벌 성장에 기여하는 인재가 되겠습니다.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="experience">
-                <h2 class="section-title text-3xl font-bold text-slate-800">주요 경험 (Experience)</h2>
-                <div class="relative mt-8 border-l-2 border-slate-200 pl-8 space-y-12">
-                    <div class="timeline-item transition-transform duration-300 hover:scale-105">
-                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-blue-600 border-2 border-slate-50"></div>
-                        <h3 class="text-xl font-bold text-slate-800">그레이스힐 검단지역아동센터</h3>
-                        <p class="text-sm text-slate-500">2025.05 ~ 재직중</p>
-                        <p class="mt-2 text-sm text-slate-600">
-                            <strong>한국장학재단 다문화/탈북민 멘토링 장학금 사업의 일환</strong>으로 돌봄교사 업무를 수행하며, 다양한 문화적 배경을 가진 아동들의 요구사항을 이해하고 해결하는 능력을 길렀습니다. 이는 해외 바이어와의 소통에 필요한 공감 능력과 책임감으로 이어집니다.
+        <section id="about" class="animate-in bg-white p-8 rounded-2xl shadow-md my-20">
+            <h2 class="section-title text-gray-800">소개</h2>
+            <div class="mt-8 grid md:grid-cols-2 gap-12">
+                <div class="space-y-6 text-gray-700 leading-relaxed">
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-gray-800">성장 배경 및 성격</h4>
+                        <p>
+                            유소년기부터 리더십이 있었고 매사에 침착하다는 칭찬을 많이 받았습니다. 항상 여러 가지 것에 흥미를 갖고 새로운 경험에 도전하는 것을 좋아합니다. 특히 세계 여러 나라에 대한 호기심이 많아 직접 방문하며 그 나라의 문화와 생활을 체험했습니다. 이를 통해 만약 교역을 하거나 거래를 한다면 어떠한 점을 중점적으로 공략하면 좋을지 생각하게 되었습니다.
                         </p>
                     </div>
-                    <div class="timeline-item transition-transform duration-300 hover:scale-105">
-                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-blue-600 border-2 border-slate-50"></div>
-                        <h3 class="text-xl font-bold text-slate-800">세븐일레븐 <span class="text-base font-medium text-slate-500 ml-2">판매직</span></h3>
-                        <p class="text-sm text-slate-500">2023.05 ~ 2023.06 / 2022.03 ~ 2022.07</p>
-                        <ul class="mt-2 list-disc list-inside text-slate-600 space-y-1">
-                            <li>다양한 고객을 응대하며 원활한 커뮤니케이션 및 서비스 마인드 함양</li>
-                            <li>고객 니즈를 빠르게 파악하고 적절한 상품을 추천하는 능력 습득</li>
-                        </ul>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-gray-800">장점과 보완점</h4>
+                        <p>
+                            리더십과 진취적인 성격은 업무에 있어 효율성과 시간 단축을 가져왔습니다. 반면, 팀원들의 목소리를 경청하지 못했던 점은 보완해야 할 부분이었습니다. 아동센터에서의 경험을 통해 다양한 사람들의 목소리에 귀 기울이는 법을 배우고, 현실적인 방법으로 그들의 요구를 해결하는 방법을 고민하게 되었습니다.
+                        </p>
                     </div>
-                    <div class="timeline-item transition-transform duration-300 hover:scale-105">
-                        <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-blue-600 border-2 border-slate-50"></div>
-                        <h3 class="text-xl font-bold text-slate-800">에이모 & 메트릭스 <span class="text-base font-medium text-slate-500 ml-2">데이터 라벨링</span></h3>
-                        <p class="text-sm text-slate-500">2021.11 ~ 2022.05</p>
-                        <ul class="mt-2 list-disc list-inside text-slate-600 space-y-1">
-                            <li>방대한 데이터를 꼼꼼하게 분류하고 분석하며 세밀한 업무 처리 능력 함양</li>
-                            <li>복잡한 데이터를 정확하게 처리하며 무역 서류 관리와 같은 꼼꼼함과 집중력 습득</li>
-                        </ul>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2 text-gray-800">지원 동기 및 포부</h4>
+                        <p>
+                            세계화 시대에 글로벌 역량을 갖춘 인재로서 귀사에 필요한 자원이 될 것이라 확신합니다. 저는 단순한 업무 반복이 아닌 자기계발을 통한 성취를 추구합니다. 저를 채용해 주신다면 귀사의 성장에 기여할 수 있는 인재가 될 것임을 자신합니다.
+                        </p>
                     </div>
                 </div>
-            </section>
+                <div class="space-y-6">
+                    <h3 class="font-bold text-xl text-gray-800">핵심 역량</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-100 rounded-lg">
+                            <h4 class="font-semibold text-blue-600">글로벌 커뮤니케이션 능력</h4>
+                            <p class="text-sm text-gray-600">JLPT N1 자격증을 기반으로 한 뛰어난 일본어 능력과 다양한 영어 스피치 경험으로 해외 바이어와 원활한 소통이 가능합니다.</p>
+                        </div>
+                        <div class="p-4 bg-gray-100 rounded-lg">
+                            <h4 class="font-semibold text-blue-600">논리적 문제 해결 및 분석력</h4>
+                            <p class="text-sm text-gray-600">코멘토 직무 캠프에서 B2B/B2C 영업 전략을 배우고, 데이터 라벨링 경험을 통해 꼼꼼하고 논리적인 문제 해결 능력을 갖췄습니다.</p>
+                        </div>
+                        <div class="p-4 bg-gray-100 rounded-lg">
+                            <h4 class="font-semibold text-blue-600">고객 중심 사고 및 관계 구축</h4>
+                            <p class="text-sm text-gray-600">판매직 경험과 다문화 멘토링 경험을 통해 다양한 고객 및 이해관계자의 니즈를 파악하는 능력을 길렀습니다.</p>
+                        </div>
+                    </div>
+                    <button onclick="summarizePortfolio()" class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded-lg transition duration-300">
+                        ✨ AI 포트폴리오 핵심 요약 요청 (채용 담당자용)
+                    </button>
+                    <div id="summary-output" class="mt-4 hidden"></div>
+                </div>
+            </div>
+        </section>
 
-            <section id="skills" class="bg-white p-8 rounded-2xl shadow-md">
-                <h2 class="section-title text-3xl font-bold text-slate-800">역량 및 교육 (Skills & Education)</h2>
-                <div class="grid lg:grid-cols-2 gap-12 mt-8">
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-700 mb-6">학력 및 어학</h3>
-                        <div class="space-y-6">
-                            <div>
-                                <h4 class="font-semibold">서울신학대학교 <span class="font-normal text-sm text-slate-500">(2021.03 ~ 2026.08 예정)</span></h4>
-                                <p class="text-slate-600">글로벌경영 전공 / 일본어문화콘텐츠 복수전공</p>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold mb-4">일본어 능력 (JLPT N1)</h4>
-                                <div class="w-full text-center p-6 bg-slate-100 rounded-lg">
-                                    <div class="text-3xl font-bold text-blue-600">준 비즈니스 레벨</div>
-                                    <p class="mt-2 text-sm text-slate-600">뉴스, 시사, 논설 등 폭넓은 주제에 대한 이해와 원어민과의 원활한 소통 가능</p>
-                                    <div class="mt-4 flex flex-col items-center">
-                                        <div id="language-bar-container" class="w-2/3 h-2 bg-blue-200 rounded-full overflow-hidden">
-                                            <div id="language-bar" class="h-full bg-blue-600 rounded-full" style="width: 0;"></div>
-                                        </div>
-                                        <div class="mt-2 text-xs text-slate-500">이해 및 활용 능력</div>
+        <section id="experience" class="animate-in my-20">
+            <h2 class="section-title text-gray-800">주요 경험</h2>
+            <div class="relative mt-8 pl-4 space-y-12">
+                <div class="timeline-line"></div>
+                
+                <div class="timeline-item">
+                    <h3 class="text-xl font-bold text-gray-800">그레이스힐 검단지역아동센터 <span class="text-sm font-medium text-gray-500 ml-2">(돌봄교사)</span></h3>
+                    <p class="text-sm text-gray-500">2025.05 ~ 재직중</p>
+                    <p class="mt-2 text-sm text-gray-600">
+                        한국장학재단 다문화/탈북민 멘토링 장학금 사업의 일환으로 다양한 배경을 가진 아이들을 멘토링하며, 타문화에 대한 높은 이해와 소통 능력을 함양했습니다. 이는 해외 영업에서 다양한 문화권의 바이어와 신뢰를 구축하는 데 큰 강점이 될 것입니다.
+                    </p>
+                </div>
+
+                <div class="timeline-item">
+                    <h3 class="text-xl font-bold text-gray-800">에이모 / 메트릭스 <span class="text-sm font-medium text-gray-500 ml-2">(데이터 라벨링)</span></h3>
+                    <p class="text-sm text-gray-500">2021.11 ~ 2022.05</p>
+                    <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1">
+                        <li>정확하고 꼼꼼한 데이터 분류를 통해 세부적인 사항을 놓치지 않는 집중력을 길렀습니다.</li>
+                        <li>방대한 자료를 체계적으로 정리하는 능력을 습득했으며, 이는 복잡한 무역 서류 처리 능력을 보여줍니다.</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h3 class="text-xl font-bold text-gray-800">세븐일레븐 <span class="text-sm font-medium text-gray-500 ml-2">(판매직)</span></h3>
+                    <p class="text-sm text-gray-500">2022.03 ~ 2023.06 (총 7개월)</p>
+                    <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1">
+                        <li>다양한 고객을 직접 응대하며 커뮤니케이션 능력과 고객 중심 사고를 함양했습니다.</li>
+                        <li>고객의 니즈를 파악하여 상품을 추천하는 등 영업 실무 능력을 간접적으로 경험했습니다.</li>
+                    </ul>
+                </div>
+                <button onclick="getCareerAdvice()" class="mt-8 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                    💡 AI 커리어 조언 요청 (유럽 진출 전략)
+                </button>
+                <div id="advice-output" class="mt-4 hidden"></div>
+            </div>
+        </section>
+
+        <section id="skills" class="animate-in bg-white p-8 rounded-2xl shadow-md my-20">
+            <h2 class="section-title text-gray-800">역량 및 교육</h2>
+            <div class="mt-8 grid lg:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-6">학력 및 언어</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-700">서울신학대학교</h4>
+                            <p class="text-gray-600 text-sm">글로벌경영학 (주전공) & 일본 문화콘텐츠학 (부전공)</p>
+                            <p class="text-gray-500 text-sm mt-1">2021.03 ~ 2026.08 (졸업 예정)</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">일본어 능력 (JLPT N1)</h4>
+                            <p class="text-gray-600 text-sm">뉴스, 평론 등 논리적이고 복잡한 시사/뉴스 내용을 상세히 이해하며, 다양한 상황에서 유창한 비즈니스 회화가 가능합니다.</p>
+                            <div class="mt-4 grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-600">시사/뉴스 이해도</p>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-fill" style="--skill-level: 95%;"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-600">비즈니스 회화 활용</p>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-fill" style="--skill-level: 90%;"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-700 mb-6">자격 및 수상</h3>
-                        <ul class="space-y-3">
-                            <li class="flex items-center"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">자격</span> 新JLPT N1 (2025.08)</li>
-                            <li class="flex items-center"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">자격</span> 컴퓨터활용능력 2급 (2025.09)</li>
-                            <li class="flex items-center"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">자격</span> 2종보통운전면허 (2021.02)</li>
-                            <li class="flex items-center"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">자격</span> 디지털정보활용능력(DIAT) (2014.05)</li>
-                            <li class="flex items-center"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">수상</span> 제7회 서울신학대학교 학술적 글쓰기 대회 최우수상 (2025.07)</li>
-                            <li class="flex items-center"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">수상</span> H+ English Speech Contest 장려상 (2025.06)</li>
-                            <li class="flex items-center"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">수상</span> STU챌린저스! 프로그램 우수상 (2024.03)</li>
-                        </ul>
-                    </div>
+                    <h3 class="font-bold text-xl text-gray-800 mt-8 mb-4">자격 및 수상</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">자격</span> JLPT N1 (2025.08)</li>
+                        <li class="flex items-center"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">자격</span> 컴퓨터활용능력2급 (2025.09)</li>
+                        <li class="flex items-center"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">자격</span> 2종 보통 운전면허 (2021.02)</li>
+                        <li class="flex items-center"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">자격</span> 디지털정보활용능력(DIAT) (2014.05)</li>
+                        <li class="flex items-center"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">수상</span> 서울신학대학교 학술적 글쓰기 대회 최우수상 (2025.07)</li>
+                        <li class="flex items-center"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">수상</span> H+ English Speech Contest 장려상 (2025.06)</li>
+                        <li class="flex items-center"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">수상</span> H+ English Speech Contest 장려상 (2024.07)</li>
+                        <li class="flex items-center"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">수상</span> STU 챌린저스! 프로그램 (2024.03)</li>
+                    </ul>
                 </div>
-                 <div class="mt-16">
-                    <h3 class="text-xl font-bold text-slate-700 mb-6">주요 교육 이수</h3>
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-                            <h4 class="font-bold text-slate-800">콘텐츠 마케팅 실무 5주 완성 캠프</h4>
-                            <p class="text-sm text-slate-500 mb-3">코멘토 (2024.11 ~ 2024.12)</p>
-                            <p class="text-slate-600">내/외부 환경 분석 기반 커뮤니케이션 전략 수립 및 채널별 콘텐츠(숏폼, 아티클) 기획/제작 실무 역량을 강화했습니다.</p>
-                        </div>
-                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-                            <h4 class="font-bold text-slate-800">B2B기술영업 & B2C영업관리 캠프</h4>
-                            <p class="text-sm text-slate-500 mb-3">코멘토 (2023.12 ~ 2024.01)</p>
-                            <p class="text-slate-600">고객사 니즈 파악, B2B 상품 제안, 기대 효과 중심의 제안서 작성 등 현업 중심의 영업 실무 경험을 쌓았습니다.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
 
-    <footer id="contact" class="bg-slate-800 text-white mt-24">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl font-bold">연락처 (Contact)</h2>
-            <p class="mt-4 text-lg text-slate-300">
-                <span class="font-semibold">저의 열정, 귀사의 성장으로 이어집니다.</span>
-                <br>
-                글로벌 시장을 향한 끊임없는 도전으로 귀사에 기여할 준비가 되어 있습니다.
-                <br class="hidden md:block">
-                성장 가능성을 믿고 함께 할 기회를 기다리겠습니다.
-            </p>
-            <div class="mt-8 flex justify-center items-center space-x-6">
-                <div class="flex items-center">
-                    <svg class="w-6 h-6 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <a href="mailto:rlawodus0722@gmail.com" class="text-blue-300 hover:text-blue-200">rlawodus0722@gmail.com</a>
-                </div>
-                <div class="flex items-center">
-                    <svg class="w-6 h-6 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                    <span class="text-slate-300">010-2396-3708</span>
+                <div>
+                    <h3 class="font-bold text-xl text-gray-800 mb-6">주요 교육</h3>
+                    <div class="space-y-6">
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-gray-800">코멘토 'B2B기술영업 & B2C영업관리캠프'</h4>
+                            <p class="text-sm text-gray-500 mt-1 mb-2">2023.12 ~ 2024.01</p>
+                            <p class="text-gray-600 text-sm">
+                                기업 분석을 통해 고객사의 니즈를 파악하고, B2B 상품을 제안하는 실무 경험을 쌓았으며, 정량적 성과 중심의 제안서 작성 노하우를 습득했습니다.
+                            </p>
+                        </div>
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-gray-800">코멘토 '콘텐츠 마케팅' 캠프</h4>
+                            <p class="text-sm text-gray-500 mt-1 mb-2">2024.11 ~ 2024.12</p>
+                            <p class="text-gray-600 text-sm">
+                                내/외부 환경 분석을 기반으로 커뮤니케이션 전략을 수립하고, 다양한 채널에 맞는 콘텐츠를 기획하는 실무 마케팅 역량을 길렀습니다.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-             <div class="mt-8">
-                 <a href="https://www.linkedin.com/in/jaeyeon-kim-a52158232/" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        </section>
+
+        <section id="contact" class="animate-in my-20 text-center">
+            <h2 class="section-title text-gray-800">연락처</h2>
+            <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                <span class="font-semibold">언제나 새로운 도전을 기대합니다.</span>
+            </p>
+            <div class="mt-8 flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <a href="mailto:rlawodus0722@gmail.com" class="text-blue-600 hover:text-blue-700">rlawodus0722@gmail.com</a>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                    <span class="text-gray-600">010-2396-3708</span>
+                </div>
+            </div>
+            <div class="mt-8">
+                <a href="https://www.linkedin.com/in/jaeyeon-kim-a52158232/" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105">
                     LinkedIn 프로필 보기
                 </a>
             </div>
-        </div>
-    </footer>
+        </section>
+
+    </main>
 
     <script>
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -273,51 +430,54 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const sections = document.querySelectorAll('section');
-            const observerOptions = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.5
-            };
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        sections.forEach(sec => sec.style.filter = 'blur(5px)');
-                        entry.target.style.filter = 'blur(0px)';
-
-                        const timelineItems = entry.target.querySelectorAll('.timeline-item');
-                        timelineItems.forEach((item, index) => {
-                            setTimeout(() => {
-                                item.classList.add('fade-in');
-                            }, index * 200);
-                        });
-
-                        if (entry.target.id === 'skills') {
-                            animateLanguageBar();
-                        }
-                    } else {
-                        const timelineItems = entry.target.querySelectorAll('.timeline-item');
-                        timelineItems.forEach(item => {
-                            item.classList.remove('fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                    if (entry.target.id === 'skills') {
+                        document.querySelectorAll('.skill-level-fill').forEach(bar => {
+                            bar.style.animation = 'none'; // 애니메이션 초기화
+                            bar.offsetHeight; // Reflow 트리거 (다시 애니메이션 시작)
+                            bar.style.animation = null;
                         });
                     }
-                });
-            }, observerOptions);
-
-            sections.forEach(section => {
-                observer.observe(section);
-            });
-
-            function animateLanguageBar() {
-                const bar = document.getElementById('language-bar');
-                if (bar) {
-                    bar.style.transition = 'width 1s ease-out';
-                    bar.style.width = '90%';
+                    entry.target.querySelectorAll('.timeline-item').forEach((item, index) => {
+                        setTimeout(() => {
+                            item.classList.add('animate-in');
+                        }, index * 150); 
+                    });
+                } else {
+                    entry.target.querySelectorAll('.timeline-item').forEach(item => {
+                        item.classList.remove('animate-in');
+                    });
                 }
-            }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('section');
+            let current = '';
+            window.addEventListener('scroll', () => {
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (window.scrollY >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                document.querySelectorAll('nav a').forEach(link => {
+                    link.classList.remove('text-blue-600', 'font-medium');
+                    link.classList.add('text-gray-600');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.remove('text-gray-600');
+                        link.classList.add('text-blue-600', 'font-medium');
+                    }
+                });
+            });
         });
     </script>
-
 </body>
 </html>
