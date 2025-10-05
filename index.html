@@ -6,7 +6,6 @@
     <title>김재연 | 포트폴리오</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -93,128 +92,34 @@
             from { width: 0; }
             to { width: var(--skill-level); }
         }
+        
+        /* 버튼 3D 누름 효과 */
+        .btn-press-effect {
+            transition: all 0.1s ease-out;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+        }
+        .btn-press-effect:active {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+            transform: translateY(3px);
+        }
+        
+        /* 비교과 활동 항목 애니메이션 */
+        .activity-item {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .activity-item.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
     </style>
 </head>
 <body class="bg-gray-50">
     <script>
-        const API_KEY = "";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-        
-        async function fetchWithBackoff(url, options, maxRetries = 5, delay = 1000) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) {
-                        if (response.status === 429 && i < maxRetries - 1) { 
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            delay *= 2; 
-                            continue; 
-                        }
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response;
-                } catch (error) {
-                    if (i === maxRetries - 1) {
-                        throw error;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; 
-                }
-            }
-        }
-
-        async function generateContent(prompt, systemInstruction) {
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                tools: [{ "google_search": {} }],
-                systemInstruction: { parts: [{ text: systemInstruction }] },
-            };
-            
-            try {
-                const response = await fetchWithBackoff(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-                
-                const result = await response.json();
-                
-                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-                    return result.candidates[0].content.parts[0].text;
-                } else {
-                    console.error("LLM response failed or was empty:", result);
-                    return "AI 응답을 생성하는 데 실패했습니다. 잠시 후 다시 시도해주세요.";
-                }
-            } catch (error) {
-                console.error("Error calling Gemini API:", error);
-                return "API 호출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-            }
-        }
-
-        async function summarizePortfolio() {
-            const summaryOutput = document.getElementById('summary-output');
-            summaryOutput.classList.remove('hidden');
-            summaryOutput.innerHTML = '<p class="text-center text-blue-600">AI가 포트폴리오를 분석하고 있습니다. 잠시만 기다려주세요...</p>';
-            
-            const portfolioContent = `
-                이름: 김재연
-                최종 목표: 벨기에, 네덜란드 등 유럽계 회사 한국/일본 지사 채용
-                주요 역량: 글로벌 커뮤니케이션(JLPT N1, 일본어 시사/뉴스 이해), 문제 해결력, 고객 중심 사고, 논리적 분석.
-                학력: 서울신학대학교 글로벌경영학(주), 일본 문화콘텐츠학(부) (2026.08 졸업 예정)
-                주요 경력:
-                1. 그레이스힐 검단지역아동센터 돌봄교사 (재직중): 한국장학재단 다문화/탈북민 멘토링 장학금 사업 일환. 타문화 이해 및 소통 능력 강화.
-                2. 세븐일레븐 판매직: 고객 응대, 영업 실무 간접 경험.
-                3. 에이모/메트릭스 데이터 라벨링: 꼼꼼함, 방대한 자료 체계적 정리 능력.
-                주요 교육:
-                1. 코멘토 B2B기술영업 & B2C영업관리캠프: 고객 니즈 파악, B2B 상품 제안, 정량적 성과 중심 제안서 작성 실무 경험.
-                2. 코멘토 콘텐츠 마케팅 캠프: 내부/외부 환경 분석 기반 커뮤니케이션 전략 수립, 채널별 콘텐츠 기획.
-            `;
-
-            const systemInstruction = "당신은 세계적인 커리어 컨설턴트입니다. 주어진 포트폴리오 내용을 분석하여 채용 담당자가 가장 주목할 만한 지원자의 핵심 강점 3가지를 도출하고, 해당 포트폴리오가 무역/해외영업 직무에 왜 적합한지 5문장 이내로 강력하게 요약해 주세요. 답변은 한국어로만 작성해야 합니다.";
-            const prompt = `다음 포트폴리오 내용을 분석해 핵심 요약문을 생성해 주세요: ${portfolioContent}`;
-            
-            try {
-                const resultText = await generateContent(prompt, systemInstruction);
-                summaryOutput.innerHTML = `
-                    <div class="border border-blue-300 bg-blue-50 p-6 rounded-lg shadow-inner">
-                        <h4 class="text-xl font-bold text-blue-700 mb-3">AI가 분석한 핵심 강점 요약</h4>
-                        <div class="text-gray-700 whitespace-pre-wrap">${resultText}</div>
-                    </div>
-                `;
-            } catch (error) {
-                summaryOutput.innerHTML = '<p class="text-center text-red-600">AI 요약 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</p>';
-            }
-        }
-
-        async function getCareerAdvice() {
-            const adviceOutput = document.getElementById('advice-output');
-            adviceOutput.classList.remove('hidden');
-            adviceOutput.innerHTML = '<p class="text-center text-blue-600">AI가 커리어 방향을 분석하고 조언을 생성하고 있습니다. 잠시만 기다려주세요...</p>';
-
-            const experienceContent = `
-                주요 목표: 벨기에/네덜란드 등 유럽계 회사 한국/일본 지사
-                현재까지 경험:
-                1. 그레이스힐 검단지역아동센터 돌봄교사 (재직중): 한국장학재단 다문화/탈북민 멘토링. 타문화 이해 및 소통 강화.
-                2. 코멘토 B2B기술영업 & B2C영업관리캠프: B2B/B2C 영업 전략, 고객 니즈 파악.
-                3. 코멘토 콘텐츠 마케팅 캠프: 커뮤니케이션 전략 수립, 채널별 콘텐츠 기획.
-                4. JLPT N1, 일본어 시사/뉴스 이해 가능.
-            `;
-            
-            const systemInstruction = "당신은 유럽 시장 전문가이자 커리어 코치입니다. 주어진 지원자의 경험과 목표(유럽계 회사 취업)를 바탕으로, 현재의 경험을 유럽 시장의 무역/해외영업 직무에 연결하기 위해 앞으로 1년간 어떤 경험(인턴십, 프로젝트, 교육 등)에 집중해야 하는지 구체적인 조언 2~3가지를 제공하세요. 조언은 한국어로 명확하게 작성해야 합니다.";
-            const prompt = `다음 경험을 가진 지원자가 유럽계 회사에 취업하기 위해 집중해야 할 커리어 조언을 주세요: ${experienceContent}`;
-            
-            try {
-                const resultText = await generateContent(prompt, systemInstruction);
-                adviceOutput.innerHTML = `
-                    <div class="border border-green-300 bg-green-50 p-6 rounded-lg shadow-inner">
-                        <h4 class="text-xl font-bold text-green-700 mb-3">AI 커리어 조언 (유럽 진출 전략)</h4>
-                        <div class="text-gray-700 whitespace-pre-wrap">${resultText}</div>
-                    </div>
-                `;
-            } catch (error) {
-                summaryOutput.innerHTML = '<p class="text-center text-red-600">AI 요약 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</p>';
-            }
-        }
+        // AI 기능 제거로 인해 API 관련 JavaScript 함수 및 변수 삭제
     </script>
     <nav class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -238,7 +143,9 @@
         
         <section id="intro" class="animate-in my-20">
             <div class="text-center">
-                <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900">김재연</h1>
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900">
+                    <span class="text-gray-900">김재연</span>
+                </h1>
                 <p class="mt-4 text-xl md:text-2xl text-blue-600 font-semibold">국경을 넘어, 가치를 창출하는 글로벌 비즈니스 솔루셔니스트</p>
                 <p class="mt-6 max-w-2xl mx-auto text-lg text-gray-600 leading-relaxed">
                     <span class="block">논리적 문제 해결 능력과 고객 중심 사고를 바탕으로,</span>
@@ -286,10 +193,16 @@
                             <p class="text-sm text-gray-600">판매직 경험과 다문화 멘토링 경험을 통해 다양한 고객 및 이해관계자의 니즈를 파악하는 능력을 길렀습니다.</p>
                         </div>
                     </div>
-                    <button onclick="summarizePortfolio()" class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded-lg transition duration-300">
-                        ✨ AI 포트폴리오 핵심 요약 요청 (채용 담당자용)
-                    </button>
-                    <div id="summary-output" class="mt-4 hidden"></div>
+                    <!-- My Global Vision: 시각적 요소 유지 -->
+                    <div class="pt-6 border-t border-gray-200 mt-6 text-center">
+                        <h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center justify-center">
+                            <span class="text-2xl mr-2">🌍</span> My Global Vision
+                        </h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            <span class="font-semibold">저의 비전은 국경을 초월하여 가치를 창출하는 글로벌 인재가 되는 것입니다.</span> <br>
+                            현재 갖춘 아시아 시장 이해와 언어 역량을 발판으로, 글로벌 기업의 성공적인 시장 확대를 이끌겠습니다.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -324,10 +237,6 @@
                         <li>고객의 니즈를 파악하여 상품을 추천하는 등 영업 실무 능력을 간접적으로 경험했습니다.</li>
                     </ul>
                 </div>
-                <button onclick="getCareerAdvice()" class="mt-8 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                    💡 AI 커리어 조언 요청 (유럽 진출 전략)
-                </button>
-                <div id="advice-output" class="mt-4 hidden"></div>
             </div>
         </section>
 
@@ -345,7 +254,7 @@
                         <div>
                             <h4 class="font-semibold text-gray-700 mb-2">일본어 능력 (JLPT N1)</h4>
                             <p class="text-gray-600 text-sm">뉴스, 평론 등 논리적이고 복잡한 시사/뉴스 내용을 상세히 이해하며, 다양한 상황에서 유창한 비즈니스 회화가 가능합니다.</p>
-                            <div class="mt-4 grid grid-cols-2 gap-4">
+                            <div class="mt-4 grid col-span-2 gap-4">
                                 <div>
                                     <p class="text-xs font-semibold text-gray-600">시사/뉴스 이해도</p>
                                     <div class="skill-level-bar">
@@ -392,9 +301,97 @@
                             </p>
                         </div>
                     </div>
+                     <!-- 비어 있던 자리에 경력 연결 전략 배치 -->
+                    <div class="pt-10 mt-10 border-t border-gray-200">
+                        <h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center justify-center">
+                            <span class="text-2xl mr-2 text-blue-600">🎯</span> 경력 연결 전략
+                        </h3>
+                        <div class="grid sm:grid-cols-1 gap-4 text-center">
+                            <div class="p-4 bg-blue-50 rounded-lg shadow-sm">
+                                <p class="font-semibold text-blue-700">타문화 공감</p>
+                                <p class="text-sm text-gray-600 mt-1">다문화 멘토링 경험을 통한 바이어 관계 구축 능력</p>
+                            </div>
+                            <div class="p-4 bg-blue-50 rounded-lg shadow-sm">
+                                <p class="font-semibold text-blue-700">데이터 처리 정확성</p>
+                                <p class="text-sm text-gray-600 mt-1">데이터 라벨링을 통한 복잡한 서류 처리의 꼼꼼함</p>
+                            </div>
+                            <div class="p-4 bg-blue-50 rounded-lg shadow-sm">
+                                <p class="font-semibold text-blue-700">실전 영업 마인드</p>
+                                <p class="text-sm text-gray-600 mt-1">B2B/B2C 캠프 및 판매직 경험으로 기른 실무 감각</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            
+            <div class="my-20 pt-10 border-t border-gray-200">
+                <h2 class="section-title text-gray-800">비교과 활동 경험</h2>
+                <p class="mt-4 text-gray-600">
+                    다양한 비교과 활동을 통해 글로벌 역량, 문제 해결 및 기획, 논리적 문서 작성 능력을 체계적으로 함양했습니다.
+                </p>
+                <!-- 3열 그리드 레이아웃으로 변경 -->
+                <div class="mt-8 grid md:grid-cols-3 gap-6">
+                    <div class="activity-item bg-gray-100 p-4 rounded-lg shadow-sm">
+                        <h4 class="font-bold text-blue-700 mb-2">글로벌 역량 강화</h4>
+                        <ul class="space-y-1 text-sm text-gray-700 list-disc list-inside">
+                            <li>비즈니스 영어 프레젠테이션 대회</li>
+                            <li>H+ English Speech Contest (2회)</li>
+                            <li>일본 문화콘텐츠 공모전 (히라메키 경진대회)</li>
+                        </ul>
+                    </div>
+                    <div class="activity-item bg-gray-100 p-4 rounded-lg shadow-sm">
+                        <h4 class="font-bold text-blue-700 mb-2">문제 해결 및 기획력</h4>
+                        <ul class="space-y-1 text-sm text-gray-700 list-disc list-inside">
+                            <li>글로컬 인성인재 양성을 위한 H+해커톤</li>
+                            <li>2024학년도 H+토론대회 수료</li>
+                            <li>STU 챌린저스! 프로그램 수상</li>
+                        </ul>
+                    </div>
+                    <div class="activity-item bg-gray-100 p-4 rounded-lg shadow-sm">
+                        <h4 class="font-bold text-blue-700 mb-2">논리적 문서 및 직무 이해</h4>
+                        <ul class="space-y-1 text-sm text-gray-700 list-disc list-inside">
+                            <li>학술적 글쓰기 대회 수료 (2회)</li>
+                            <li>글로벌경영학과 진로특강 수료</li>
+                            <li>NCS 특강 수료</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 새로 추가된 섹션: 핵심 성과 사례 (Key Achievement Cases) -->
+            <div class="my-20 pt-10 border-t border-gray-200">
+                <h2 class="section-title text-gray-800">핵심 성과 사례 (Key Achievement Cases)</h2>
+                <p class="mt-4 text-gray-600">
+                    직무 캠프 및 기타 경험을 통해 달성한 핵심 성과를 STAR 기법 기반으로 요약하여, 저의 문제 해결 능력을 구체적으로 보여드립니다.
+                </p>
+                <div class="mt-8 grid md:grid-cols-2 gap-8">
+                    <!-- Case 1: B2B 영업 전략 제안 (코멘토 캠프) -->
+                    <div class="bg-gray-100 p-6 rounded-xl shadow-md space-y-3">
+                        <h4 class="font-bold text-lg text-blue-700 flex items-center">
+                            <span class="text-xl mr-2">💡</span> B2B 기술영업 전략 제안 및 우수 평가 획득
+                        </h4>
+                        <ul class="text-sm text-gray-700 space-y-2 list-none p-0">
+                            <li><span class="font-semibold text-blue-600">상황 & 과제:</span> 인천공항공사의 잠재적 위험(약점, 위협) 분석을 기반으로, 운영 효율과 비용 절감을 위한 AICC 온프레미스 상품을 제안하는 과제였습니다.</li>
+                            <li><span class="font-semibold text-blue-600">실행:</span> 고객사의 SWOT 분석을 통해 실제 니즈를 예상하고, 경쟁사 대비 차별화된 시너지를 강조하여 제안서의 논리적 설득력을 극대화했습니다.</li>
+                            <li><span class="font-semibold text-blue-600">결과:</span> 멘토로부터 '실제 기업 보고서에 버금가는 설득력 있는 스토리와 제안'이라는 우수 평가를 받았으며, B2B 영업 마인드셋을 성공적으로 확립했습니다.</li>
+                        </ul>
+                    </div>
+                    <!-- Case 2: 콘텐츠 마케팅 전략 수립 (코멘토 캠프) -->
+                    <div class="bg-gray-100 p-6 rounded-xl shadow-md space-y-3">
+                        <h4 class="font-bold text-lg text-blue-700 flex items-center">
+                            <span class="text-xl mr-2">🎬</span> 타겟 맞춤형 콘텐츠 기획 및 최우수 기획안 선정
+                        </h4>
+                        <ul class="text-sm text-gray-700 space-y-2 list-none p-0">
+                            <li><span class="font-semibold text-blue-600">상황 & 과제:</span> 글로벌 브랜드의 시장 커뮤니케이션 현황을 분석하고, 타겟 잠재 고객의 도달 및 확보에 최적화된 협업 콘텐츠를 기획해야 하는 과제였습니다.</li>
+                            <li><span class="font-semibold text-blue-600">실행:</span> 타겟의 라이프스타일과 채널별 특성을 깊이 분석하여, 잠재고객의 구매 여정 단계별(인지-획득-전환)에 부합하는 영상 및 아티클 기획안을 제시했습니다.</li>
+                            <li><span class="font-semibold text-blue-600">결과:</span> 실무 적용 가능성과 명확한 포지셔닝으로 멘토링 프로그램에서 최우수 기획안 중 하나로 선정되었고, 논리적인 시장 분석 능력을 증명했습니다.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
         </section>
+
 
         <section id="contact" class="animate-in my-20 text-center">
             <h2 class="section-title text-gray-800">연락처</h2>
@@ -412,7 +409,7 @@
                 </div>
             </div>
             <div class="mt-8">
-                <a href="https://www.linkedin.com/in/jaeyeon-kim-a52158232/" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105">
+                <a href="https://www.linkedin.com/in/jaeyeon-kim-a52158232/" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 btn-press-effect">
                     LinkedIn 프로필 보기
                 </a>
             </div>
@@ -436,9 +433,14 @@
                     entry.target.classList.add('animate-in');
                     if (entry.target.id === 'skills') {
                         document.querySelectorAll('.skill-level-fill').forEach(bar => {
-                            bar.style.animation = 'none'; // 애니메이션 초기화
-                            bar.offsetHeight; // Reflow 트리거 (다시 애니메이션 시작)
+                            bar.style.animation = 'none'; 
+                            bar.offsetHeight; 
                             bar.style.animation = null;
+                        });
+                        entry.target.querySelectorAll('.activity-item').forEach((item, index) => {
+                            setTimeout(() => {
+                                item.classList.add('animate-in');
+                            }, index * 150); 
                         });
                     }
                     entry.target.querySelectorAll('.timeline-item').forEach((item, index) => {
@@ -448,6 +450,9 @@
                     });
                 } else {
                     entry.target.querySelectorAll('.timeline-item').forEach(item => {
+                        item.classList.remove('animate-in');
+                    });
+                    entry.target.querySelectorAll('.activity-item').forEach(item => {
                         item.classList.remove('animate-in');
                     });
                 }
